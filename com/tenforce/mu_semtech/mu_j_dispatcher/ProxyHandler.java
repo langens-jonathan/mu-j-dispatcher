@@ -4,6 +4,8 @@ import java.io.*;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.List;
+import java.util.Map;
 
 /*
 A generic proxy handler class. It will either try to handle a request based on some
@@ -165,6 +167,33 @@ public class ProxyHandler
 			BufferedReader inFromServer = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 			PrintWriter outToClient = new PrintWriter(socket.getOutputStream());
 			String inputFromServer;
+
+            Map<String, List<String>> headers = connection.getHeaderFields();
+            String headersString = "";
+
+            for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+                if(entry.getKey() != null) {
+                    for(String value: entry.getValue()) {
+                        if(!value.equals("chunked")) {
+                            headersString += entry.getKey() + ": ";
+                            headersString += value + "\n";
+                        }
+                    }
+                }
+                else
+                {
+                    String headersStart = "";
+                    for(String value:entry.getValue())
+                    {
+                        headersStart += value + " ";
+                    }
+                    headersString = headersStart + "\n" + headersString;
+                }
+            }
+
+            System.out.println("[< headers]\n" + headersString);
+            outToClient.println(headersString);
+
 
 				System.out.println("[<] Receiving:");
 				while ((inputFromServer = inFromServer.readLine()) != null) {

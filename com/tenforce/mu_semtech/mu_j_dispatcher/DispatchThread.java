@@ -31,6 +31,9 @@ public class DispatchThread extends Thread
 
 	/*
 	loads the proxy handlers into memory
+
+	to be done
+	    the dispatchers should not be hard coded but loaded out of a file
 	 */
     private void setProxyHandlers()
     {
@@ -44,7 +47,6 @@ public class DispatchThread extends Thread
     		this.proxyHandlers.add(new ProxyHandler("/comments", "http://comments/", ""));
     		this.proxyHandlers.add(new ProxyHandler("/catalogs/", "http://resource/catalogs", ""));
     		this.proxyHandlers.add(new ProxyHandler("/catalogs", "http://resource/catalogs", ""));
-    		this.proxyHandlers.add(new ProxyHandler("", "", "HTTP/1.0 404 Not Found\n", true));
     	}
     	catch(Exception e)
     	{
@@ -80,7 +82,17 @@ public class DispatchThread extends Thread
     			e.printStackTrace();
     		}
     	}
-    		
+
+        // if none of the proxy handlers could handle this request we send a 404
+        try {
+            PrintWriter out = new PrintWriter(this.socket.getOutputStream());
+            out.println("HTTP/1.1 404 NOT FOUND");
+            out.flush();
+            out.close();
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
 	/*
